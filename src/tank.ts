@@ -1,65 +1,53 @@
 export class Tank {
-    public get currentSpeed(): TankSpeed {
-        return this._currentSpeed;
-    }
-    
-    public get selectedGear(): number {
-        return this._selectedGear;
-    }
+    private currentLeftWheelSpeed = 0;
+    private currentRightWheelSpeed = 0;
 
-    private _currentSpeed: TankSpeed = {leftWheel: 0, rightWheel: 0}
-    private _selectedGear: number = 1;
+    public constructor(private transmission: Transmission, private leftWheel: Wheel, private rightWheel: Wheel) { }
 
-    public constructor(private transmission: Transmission) { }
+    public setSpeed(leftWheelSpeed: number, rightWheelSpeed: number): void{        
+        this.currentLeftWheelSpeed = this.returnSpeedInBounds(leftWheelSpeed);
+        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
 
-    public setSpeed(speed: TankSpeed): void {
-        if (speed.leftWheel > 100) {
-            this._currentSpeed.leftWheel = 100
-        } else if (speed.leftWheel < -100) {
-            this._currentSpeed.leftWheel = -100
-        } else {
-            this._currentSpeed.leftWheel = speed.leftWheel
-        }
-
-        if (speed.rightWheel > 100) {
-            this._currentSpeed.rightWheel = 100
-        } else if (speed.rightWheel < -100) {
-            this._currentSpeed.rightWheel = -100
-        } else {
-            this._currentSpeed.rightWheel = speed.rightWheel
-        }
-    }
-
-    public selectFirstGear(): void {
-        this._selectedGear = 1;
-    }
-
-    public selectFinalGear(): number {
-        this._selectedGear = 3;
-        return this._selectedGear;
+        this.currentRightWheelSpeed = this.returnSpeedInBounds(rightWheelSpeed);
+        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
     }
 
     public shiftUp(): number {
-        if (this._selectedGear < 3) {
-            this._selectedGear++;
-        }
-        
-        return this._selectedGear;
+        const gear = this.transmission.shiftUp();
+        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
+        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
+        return gear;
     }
 
     public shiftDown(): number {
-        if (this._selectedGear > 1) {
-            this._selectedGear--;
-        }
-        
-        return this._selectedGear;
+        const gear = this.transmission.shiftDown();
+        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
+        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
+        return gear;
     }
 
+    public selectGear(gear: number): void {
+        this.transmission.selectGear(gear);
+    }
+
+    private returnSpeedInBounds(speed: number): number {
+        if (speed > 100) {
+            return 100
+        } else if (speed < -100) {
+            return -100
+        } else {
+            return speed;
+        }
+    }
 }
 
 export interface TankSpeed {
     leftWheel: number,
     rightWheel: number
+}
+
+export interface Wheel {
+    setSpeed(speed: number): void;
 }
 
 export interface Transmission {
@@ -70,7 +58,3 @@ export interface Transmission {
     shiftDown(): number;
     getFinalDriveSpeed(inputSpeed: number): number;
 }
-
-// export interface Wheel {
-//     setSpeed(): void;
-// }

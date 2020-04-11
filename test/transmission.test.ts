@@ -74,4 +74,15 @@ describe('final drive speed', () => {
         expect(transmission.getFinalDriveSpeed(100)).toBe(100);
         expect(transmission.getFinalDriveSpeed(200)).toBe(200);
     });
+
+    test('two speed transmission', () => {
+        const twoSpeedTransmission = new StandardTransmission(2);
+        twoSpeedTransmission.selectGear(1);
+        expect(twoSpeedTransmission.getFinalDriveSpeed(100)).toBe(50);
+        expect(twoSpeedTransmission.getFinalDriveSpeed(50)).toBe(25);
+
+        twoSpeedTransmission.selectGear(2);
+        expect(transmission.getFinalDriveSpeed(100)).toBe(100);
+        expect(transmission.getFinalDriveSpeed(40)).toBe(40);
+    });
 })

@@ -1,103 +1,120 @@
 import { Tank } from '../src/tank';
 import { StandardTransmission } from '../src/standardTransmission';
+import { MockWheel } from './mockWheel';
 
-function initializeTank(): Tank {
-    return new Tank(new StandardTransmission(3));
-}
 
 describe('Tank initialization', () => {
-    const tank = initializeTank();
+    const transmission = new StandardTransmission(3);
+    transmission.selectGear(1);
+    const leftWheel = new MockWheel();
+    leftWheel.setSpeed(0);
+    const rightWheel = new MockWheel();
+    rightWheel.setSpeed(0);
+    const tank = new Tank(transmission, leftWheel, rightWheel);
 
     test('speed should be 0', () => {
-        expect(tank.currentSpeed).toEqual({leftWheel: 0, rightWheel: 0});
+        expect(leftWheel.currentSpeed).toEqual(0);
+        expect(rightWheel.currentSpeed).toEqual(0);
     });
 
     test('gear should be first', () => {
-        expect(tank.selectedGear).toBe(1);
+        expect(transmission.selectedGear).toBe(1);
     });
 });
 
 describe('tank moving', () => {
-    const tank = initializeTank();
+    const transmission = new StandardTransmission(1);
+    const leftWheel = new MockWheel();
+    const rightWheel = new MockWheel();
+    const tank = new Tank(transmission, leftWheel, rightWheel);
+
     test('set speed', () => {
-        tank.setSpeed({leftWheel: 0, rightWheel: 0});
-        expect(tank.currentSpeed).toEqual({leftWheel: 0, rightWheel: 0});
+        tank.setSpeed(0, 0);
+        expect(leftWheel.currentSpeed).toEqual(0);
+        expect(rightWheel.currentSpeed).toEqual(0);
 
-        tank.setSpeed({leftWheel: 0, rightWheel: 50});
-        expect(tank.currentSpeed).toEqual({leftWheel: 0, rightWheel: 50});
+        tank.setSpeed(0, 50);
+        expect(leftWheel.currentSpeed).toEqual(0);
+        expect(rightWheel.currentSpeed).toEqual(50);
 
-        tank.setSpeed({leftWheel: 60, rightWheel: 0});
-        expect(tank.currentSpeed).toEqual({leftWheel: 60, rightWheel: 0});
+        tank.setSpeed(60, 0);
+        expect(leftWheel.currentSpeed).toEqual(60);
+        expect(rightWheel.currentSpeed).toEqual(0);
 
-        tank.setSpeed({leftWheel: 40, rightWheel: 80});
-        expect(tank.currentSpeed).toEqual({leftWheel: 40, rightWheel: 80});
+        tank.setSpeed(40, 80);
+        expect(leftWheel.currentSpeed).toEqual(40);
+        expect(rightWheel.currentSpeed).toEqual(80);
     });
 
-    test('set negative speed', () => {
-        tank.setSpeed({leftWheel: 0, rightWheel: -50});
-        expect(tank.currentSpeed).toEqual({leftWheel: 0, rightWheel: -50});
+    test('negative speed', () => {
+        tank.setSpeed(-30, 0);
+        expect(leftWheel.currentSpeed).toEqual(-30);
+        expect(rightWheel.currentSpeed).toEqual(0);
 
-        tank.setSpeed({leftWheel: -60, rightWheel: 0});
-        expect(tank.currentSpeed).toEqual({leftWheel: -60, rightWheel: 0});
-
-        tank.setSpeed({leftWheel: -40, rightWheel: -80});
-        expect(tank.currentSpeed).toEqual({leftWheel: -40, rightWheel: -80});
+        tank.setSpeed(-10, -40);
+        expect(leftWheel.currentSpeed).toEqual(-10);
+        expect(rightWheel.currentSpeed).toEqual(-40);
     });
 
-    test('set overflow speed', () => {
-        tank.setSpeed({leftWheel: -500, rightWheel: 500});
-        expect(tank.currentSpeed).toEqual({leftWheel: -100, rightWheel: 100});
+    test('speed overflow', () => {
+        tank.setSpeed(300, 70);
+        expect(leftWheel.currentSpeed).toEqual(100);
+        expect(rightWheel.currentSpeed).toEqual(70);
 
-        tank.setSpeed({leftWheel: 220, rightWheel: -200});
-        expect(tank.currentSpeed).toEqual({leftWheel: 100, rightWheel: -100});
-    });
+        tank.setSpeed(-220, 777);
+        expect(leftWheel.currentSpeed).toEqual(-100);
+        expect(rightWheel.currentSpeed).toEqual(100);
+    })
 });
 
-describe('tank transmission', () => {
-    const tank = initializeTank();
+describe('tank transmission shifting', () => {
+    const transmission = new StandardTransmission(3);
+    const leftWheel = new MockWheel();
+    const rightWheel = new MockWheel();
+    const tank = new Tank(transmission, leftWheel, rightWheel);
 
     test('shift up', () => {
         expect(tank.shiftUp()).toBe(2);
-        expect(tank.selectedGear).toBe(2);
+        expect(transmission.selectedGear).toBe(2);
         expect(tank.shiftUp()).toBe(3);
-        expect(tank.selectedGear).toBe(3);
+        expect(transmission.selectedGear).toBe(3);
     });
 
-    test('select first gear', () => {
-        tank.selectFirstGear();
-        expect(tank.selectedGear).toBe(1);
-        expect(tank.shiftUp()).toBe(2);
+    test('select gear', () => {
+        tank.selectGear(1);
+        expect(transmission.selectedGear).toBe(1);
 
-        tank.selectFirstGear();
-        expect(tank.selectedGear).toBe(1);
-
-        tank.shiftUp();
-        tank.shiftUp();
-        expect(tank.selectedGear).toBe(3);
-
-        tank.selectFirstGear();
-        expect(tank.selectedGear).toBe(1);
-    });
-
-    test('select final gear', () => {
-        tank.selectFirstGear();
-        expect(tank.selectedGear).toBe(1);
-        expect(tank.selectFinalGear()).toBe(3);
+        tank.selectGear(3);
+        expect(transmission.selectedGear).toBe(3);
     });
 
     test('shift down', () => {
-        tank.selectFinalGear();
+        tank.selectGear(3);
         expect(tank.shiftDown()).toBe(2);
-        expect(tank.selectedGear).toBe(2);
+        expect(transmission.selectedGear).toBe(2);
         expect(tank.shiftDown()).toBe(1);
-        expect(tank.selectedGear).toBe(1);
+        expect(transmission.selectedGear).toBe(1);
     });
+});
 
-    test('shift overflow', () => {
-        tank.selectFirstGear();
-        expect(tank.shiftDown()).toBe(1);
-        
-        tank.selectFinalGear();
-        expect(tank.shiftUp()).toBe(3);
+describe('transmission power delivery', () => {
+    const transmission = new StandardTransmission(3);
+    const leftWheel = new MockWheel();
+    const rightWheel = new MockWheel();
+    const tank = new Tank(transmission, leftWheel, rightWheel);
+
+    test('transmission power delivery', () => {
+        tank.selectGear(1);
+        tank.setSpeed(50, 100);
+        expect(leftWheel.currentSpeed).toBe(50/3);
+        expect(rightWheel.currentSpeed).toBe(100/3);
+
+        tank.shiftUp();
+        expect(leftWheel.currentSpeed).toBe(50*2/3);
+        expect(rightWheel.currentSpeed).toBe(100*2/3);
+
+        tank.setSpeed(-100, 60);
+        expect(leftWheel.currentSpeed).toBe(-100*2/3);
+        expect(rightWheel.currentSpeed).toBe(60*2/3);
     });
 });

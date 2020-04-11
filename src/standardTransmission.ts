@@ -39,6 +39,7 @@ export class StandardTransmission implements Transmission {
     }
 
     public getFinalDriveSpeed(inputSpeed: number): number {
-        return inputSpeed * this._selectedGear / 3;
+        return inputSpeed * this._selectedGear / this._gears;
+        
     }
 }
