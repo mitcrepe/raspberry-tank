@@ -1,10 +1,15 @@
 console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 
+var lastRightStickTap;
+var lastLeftStickTap;
+const gearElement = document.getElementById('gear');
+const doubleTapInterval = 250; 
+
 var rightJoystick = new VirtualJoystick({
     container: document.body,
-    strokeStyle: 'cyan',
+    strokeStyle: 'black',
     limitStickTravel: true,
-    stickRadius: 100,
+    stickRadius: 101,
     mouseSupport: true,
     stationaryBase: true,
     baseX: window.innerWidth - 100,
@@ -12,6 +17,7 @@ var rightJoystick = new VirtualJoystick({
     limitStickTravel: true,
 
 });
+
 rightJoystick.addEventListener('touchStartValidation', function(event){
     var touch = event.changedTouches[0];
     if( touch.pageX < window.innerWidth/2 )	
@@ -20,12 +26,21 @@ rightJoystick.addEventListener('touchStartValidation', function(event){
         return true;
 });
 
-// one on the right of the screen
+rightJoystick.addEventListener('touchStart', function(){
+    let now = new Date().getTime();
+    let timesince = now - lastRightStickTap;
+    if((timesince < doubleTapInterval) && (timesince > 0)){
+        sendRequest('shift', {shift: 'up'});
+    }
+    lastRightStickTap = new Date().getTime();
+});
+
+
 var leftJoystick = new VirtualJoystick({
     container: document.body,
-    strokeStyle: 'orange',
+    strokeStyle: 'black',
     limitStickTravel: true,
-    stickRadius: 100,
+    stickRadius: 101,
     stationaryBase: true,
     baseX: 100,
     baseY: window.innerHeight / 2,
@@ -40,15 +55,21 @@ leftJoystick.addEventListener('touchStartValidation', function(event){
         return true;
 });
 
+leftJoystick.addEventListener('touchStart', function(){
+    let now = new Date().getTime();
+    let timesince = now - lastLeftStickTap;
+    if((timesince < doubleTapInterval) && (timesince > 0)){
+        sendRequest('shift', {shift: 'down'});
+    }
+    lastLeftStickTap = new Date().getTime();
+});
+
+
 setInterval(sendJoysticksData, 1000);
 
 
 function sendJoysticksData() {
-    let joysticksData = getJoysticksData();
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('POST', 'api/sticksInput');
-    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    //xmlHttp.send(JSON.stringify(joysticksData));
+    sendRequest('sticksInput', getJoysticksData());
 }
 
 function getJoysticksData() {
@@ -56,4 +77,11 @@ function getJoysticksData() {
         leftStick: -leftJoystick.deltaY(),
         rightStick: -rightJoystick.deltaY()
     }
+}
+
+function sendRequest(destination, data) {
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('POST', 'api/' + destination);
+    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlHttp.send(JSON.stringify(data));
 }
