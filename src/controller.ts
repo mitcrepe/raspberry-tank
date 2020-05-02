@@ -1,10 +1,12 @@
 import { ISimpleEvent, ISignal } from 'strongly-typed-events'
 
 export interface Controller {
-    readonly leftStickChanged: ISimpleEvent<number>;
-    readonly rightStickChanged: ISimpleEvent<number>;
+    readonly sticksChanged: ISimpleEvent<SticksValues>;
     readonly upShift: ISignal;
     readonly downShift: ISignal;
 }
 
-
+export interface SticksValues {
+    leftStick: number;
+    rightStick: number
+}

@@ -4,25 +4,21 @@ export class Tank {
 
     public constructor(private transmission: Transmission, private leftWheel: Wheel, private rightWheel: Wheel) { }
 
-    public setSpeed(leftWheelSpeed: number, rightWheelSpeed: number): void{        
-        this.currentLeftWheelSpeed = this.returnSpeedInBounds(leftWheelSpeed);
-        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
-
-        this.currentRightWheelSpeed = this.returnSpeedInBounds(rightWheelSpeed);
-        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
+    public setSpeed(leftWheelSpeed: number, rightWheelSpeed: number): void {  
+        this.currentLeftWheelSpeed = this.capSpeed(leftWheelSpeed);
+        this.currentRightWheelSpeed = this.capSpeed(rightWheelSpeed);
+        this.updateWheels();
     }
 
     public shiftUp(): number {
         const gear = this.transmission.shiftUp();
-        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
-        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
+        this.updateWheels();
         return gear;
     }
 
     public shiftDown(): number {
         const gear = this.transmission.shiftDown();
-        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
-        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
+        this.updateWheels();
         return gear;
     }
 
@@ -30,7 +26,12 @@ export class Tank {
         this.transmission.selectGear(gear);
     }
 
-    private returnSpeedInBounds(speed: number): number {
+    private updateWheels(): void {
+        this.leftWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentLeftWheelSpeed));
+        this.rightWheel.setSpeed(this.transmission.getFinalDriveSpeed(this.currentRightWheelSpeed));
+    }
+
+    private capSpeed(speed: number): number {
         if (speed > 100) {
             return 100
         } else if (speed < -100) {

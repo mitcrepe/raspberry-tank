@@ -1,4 +1,4 @@
-import { Controller } from "./controller";
+import { Controller, SticksValues } from "./controller";
 import { SimpleEventDispatcher, ISimpleEvent, ISignal, SignalDispatcher } from 'strongly-typed-events';
 import * as express from 'express';
 import { Express } from 'express';
@@ -8,17 +8,12 @@ import * as path from 'path';
 //Later when adding camera, add interface for Monitor. This class can implement both
 export class LocalHostingController implements Controller {
     private server: Express;
-    private _leftStickChanged = new SimpleEventDispatcher<number>();
-    private _rightStickChanged = new SimpleEventDispatcher<number>();
+    private _sticksChanged = new SimpleEventDispatcher<SticksValues>();
     private _upShift = new SignalDispatcher();
     private _downShift = new SignalDispatcher();
 
-    public get leftStickChanged(): ISimpleEvent<number> {
-        return this._leftStickChanged.asEvent()
-    }
-
-    public get rightStickChanged(): ISimpleEvent<number> {
-        return this._rightStickChanged.asEvent()
+    public get sticksChanged(): ISimpleEvent<SticksValues> {
+        return this._sticksChanged.asEvent()
     }
 
     public get upShift(): ISignal {
@@ -46,14 +41,17 @@ export class LocalHostingController implements Controller {
             res.sendStatus(200);
             console.log('Sticks input: ' + JSON.stringify(req.body));
             
-            this._leftStickChanged.dispatchAsync(this.capStickInput(req.body.leftStick));
-            this._rightStickChanged.dispatchAsync(this.capStickInput(req.body.rightStick));
+            const sticksValues = {
+                leftStick: this.capStickInput(req.body.leftStick),
+                rightStick: this.capStickInput(req.body.rightStick)
+            }
+            this._sticksChanged.dispatchAsync(sticksValues);
         });          
 
         this.server.post('/api/shift', (req, res) => {
             res.sendStatus(200);
-
-            if (req.body.shift === 'up') {               
+            
+            if (req.body.shift === 'up') {                               
                 this._upShift.dispatchAsync();
             } else if (req.body.shift === 'down') {
                 this._downShift.dispatchAsync();

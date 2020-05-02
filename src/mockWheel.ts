@@ -1,4 +1,4 @@
-import { Wheel } from "../src/tank";
+import { Wheel } from "./tank";
 
 export class MockWheel implements Wheel {
     public get currentSpeed() {
@@ -9,5 +9,6 @@ export class MockWheel implements Wheel {
 
     setSpeed(speed: number): void {
         this._speed = speed;
+        console.log('wheel:' + this._speed);
     }
 }

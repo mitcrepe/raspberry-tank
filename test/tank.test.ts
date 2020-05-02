@@ -1,6 +1,6 @@
 import { Tank } from '../src/tank';
 import { StandardTransmission } from '../src/standardTransmission';
-import { MockWheel } from './mockWheel';
+import { MockWheel } from '../src/mockWheel';
 
 
 describe('Tank initialization', () => {

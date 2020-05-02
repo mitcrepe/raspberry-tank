@@ -65,7 +65,7 @@ leftJoystick.addEventListener('touchStart', function(){
 });
 
 
-setInterval(sendJoysticksData, 1000);
+setInterval(sendJoysticksData, 100);
 
 
 function sendJoysticksData() {
@@ -84,4 +84,5 @@ function sendRequest(destination, data) {
     xmlHttp.open('POST', 'api/' + destination);
     xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xmlHttp.send(JSON.stringify(data));
+    gearElement.innerHTML = 'sending this: ' + JSON.stringify(data);
 }
