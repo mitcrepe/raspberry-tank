@@ -27,7 +27,7 @@ export class L298NWheel implements Wheel {
 
     private getPwmSpeed(speed: number) {
         speed = Math.abs(speed);
-        speed = Math.max(speed, 100);
+        speed = Math.min(speed, 100);
         return speed * 255 / 100;
     }
 }
